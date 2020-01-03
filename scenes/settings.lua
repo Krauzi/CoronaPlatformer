@@ -48,7 +48,6 @@ function scene:create( event )
 	local background = display.newImageRect( sceneGroup, "/images/background.jpg", 1280, 720 )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
-
 	uiGroup:insert(background)
 
 	local settingsTitle = display.newText( sceneGroup, "Ustawienia", display.contentCenterX, 100, "fonts/Pixellari.ttf", 92 )
@@ -91,8 +90,11 @@ function scene:create( event )
 
 	local menuButton = display.newText( sceneGroup, "Powrót", display.contentCenterX, 630, "fonts/Pixellari.ttf", 60 )
 	menuButton:setFillColor( 1, 1, 1 )
-	uiGroup:insert(menuButton)
 	menuButton:addEventListener( "tap", gotoMenu )
+	uiGroup:insert(menuButton)
+
+	sceneGroup:insert( uiGroup )
+	sceneGroup:insert( volumeGroup )
 end
 
 

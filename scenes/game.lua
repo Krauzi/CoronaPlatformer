@@ -10,6 +10,7 @@ physics.start()
 physics.setGravity(0, 6)
 
 local myRectangle
+local runningHero
 local floor1
 local floor2
 
@@ -50,13 +51,47 @@ end
 local function onKeyEvent( event )
 	-- Jumping
 	if ( event.keyName == "space" ) then
-        if (event.phase == "down" and math.floor(myRectangle.y) == 595) then
-			myRectangle:setLinearVelocity(0, -450)
+        if (event.phase == "down") then
+			runningHero:setLinearVelocity(0, -450)
         end
 	end
 	--TODO: crouching/slide
 
     return false
+end
+
+local running_options = {
+    frames = {
+        { x=0, y=0, width=143, height=189 },
+        { x=145, y=0, width=126, height=189 },
+        { x=272, y=0, width=124, height=189 },
+        { x=397, y=0, width=162, height=189 },
+		{ x=561, y=0, width=153, height=189 },
+		{ x=717, y=0, width=126, height=189 },
+		{ x=846, y=0, width=138, height=189 },
+		{ x=987, y=0, width=135, height=189 }
+    },
+    sheetContentWidth = 1123,
+    sheetContentHeight = 189
+}
+local sheet_runningHero = graphics.newImageSheet( "/images/running-sprite.png", running_options )
+
+
+local sequences_runningHero = {
+    {
+        name = "normalRun",
+        start = 1,
+        count = 8,
+        time = 600,
+        loopCount = 0,
+        loopDirection = "forward"
+    }
+}
+
+local function heroListener( event )
+ 
+    local thisSprite = event.target  -- "event.target" references the sprite
+
 end
 
 -- -----------------------------------------------------------------------------------
@@ -73,7 +108,6 @@ function scene:create( event )
 
 end
 
-
 -- show()
 function scene:show( event )
 
@@ -84,12 +118,12 @@ function scene:show( event )
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 		physics.pause()
 
-		myRectangle = display.newRect( 60, 590, 50, 50 )
-		myRectangle.strokeWidth = 3
-		myRectangle:setFillColor( 0.5 )
-		myRectangle:setStrokeColor( 1, 0, 0 )
-		physics.addBody( myRectangle, "dynamic", {60, 590, 110, 590, 160, 640, 60, 640} )
-		myRectangle.gravityScale = 4
+		runningHero = display.newSprite( sheet_runningHero, sequences_runningHero )
+		runningHero.x = 100
+		runningHero.y = 524
+		physics.addBody( runningHero, "dynamic", {60, 590, 110, 590, 160, 640, 60, 640} )
+		runningHero.gravityScale = 4
+		runningHero:addEventListener( "sprite", heroListener )
 
 		floor1 = display.newRect( 700, 650, 1400, 50 )
 		floor1.strokeWidth = 3
@@ -111,6 +145,8 @@ function scene:show( event )
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
 		Runtime:addEventListener( "key", onKeyEvent )
+		runningHero:setSequence( "normalRun" )
+		runningHero:play()
 		gameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
 	end
 end

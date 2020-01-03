@@ -25,19 +25,19 @@ end
 function scene:create( event )
 	local sceneGroup = self.view
 
-	local background = display.newImageRect( sceneGroup, "/images/background.jpg", 720, 410 )
+	local background = display.newImageRect( sceneGroup, "/images/background.jpg", 1280, 720 )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	local title1 = display.newText( sceneGroup, "CORONA", display.contentCenterX, 520, "fonts/Pixellari.ttf", 76 )
+	local title1 = display.newText( sceneGroup, "CORONA", display.contentCenterX, 180, "fonts/Pixellari.ttf", 112 )
 	title1:setFillColor( 249/255, 111/255, 41/255 )
-	local title2 = display.newText( sceneGroup, "PLATFORMER", display.contentCenterX, 580, "fonts/Pixellari.ttf", 66 )
+	local title2 = display.newText( sceneGroup, "PLATFORMER", display.contentCenterX, 260, "fonts/Pixellari.ttf", 86 )
 	title2:setFillColor( 1, 1, 1)
 
-	local playButton = display.newText( sceneGroup, "Graj", display.contentCenterX, 670, "fonts/Pixellari.ttf", 52 )
+	local playButton = display.newText( sceneGroup, "Graj", display.contentCenterX, 400, "fonts/Pixellari.ttf", 64 )
 	playButton:setFillColor( 1, 1, 1 )
 
-	local settingsButton = display.newText( sceneGroup, "Ustawienia", display.contentCenterX, 730, "fonts/Pixellari.ttf", 52 )
+	local settingsButton = display.newText( sceneGroup, "Ustawienia", display.contentCenterX, 470, "fonts/Pixellari.ttf", 64 )
 	settingsButton:setFillColor( 1, 1, 1  )
 
 	playButton:addEventListener( "tap", gotoGame )

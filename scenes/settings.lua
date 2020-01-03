@@ -14,11 +14,27 @@ local function gotoMenu()
 	composer.gotoScene( "scenes.menu", { time=400, effect="crossFade" } )
 end
 
-local function sliderListener( event )
-    print( "Slider at " .. event.value .. "%" )
+
+local uiGroup = display.newGroup()
+local volumeGroup = display.newGroup()
+
+local function bgSliderListener( event )
+	audio.setVolume( event.value / 100 )
 end
 
 
+local options = {
+    frames = {
+        { x=0, y=0, width=17, height=64 },
+        { x=38, y=0, width=13, height=64 },
+        { x=19, y=0, width=17, height=64 },
+        { x=53, y=0, width=13, height=64 },
+        { x=68, y=0, width=42, height=64 }
+    },
+    sheetContentWidth = 110,
+    sheetContentHeight = 64
+}
+local sliderSheet = graphics.newImageSheet( "/images/widget-slider.png", options )
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -29,21 +45,53 @@ function scene:create( event )
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
 
-	local background = display.newImageRect( sceneGroup, "/images/background.jpg", 720, 410 )
+	local background = display.newImageRect( sceneGroup, "/images/background.jpg", 1280, 720 )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	local settingsTitle = display.newText( sceneGroup, "Ustawienia", display.contentCenterX, 520, "fonts/Pixellari.ttf", 70 )
-	settingsTitle:setFillColor( 1, 1, 1 )
+	uiGroup:insert(background)
 
-	local controlsLabel = display.newText( sceneGroup, "Sterowanie:", display.contentCenterX, 600, "fonts/Pixellari.ttf", 56 )
+	local settingsTitle = display.newText( sceneGroup, "Ustawienia", display.contentCenterX, 100, "fonts/Pixellari.ttf", 92 )
+	settingsTitle:setFillColor( 249/255, 111/255, 41/255 )
+	uiGroup:insert(settingsTitle)
 
-	local jump = display.newText( sceneGroup, "Skok: SPACJA", display.contentCenterX, 660, "fonts/Pixellari.ttf", 40 )
+	local controlsLabel = display.newText( sceneGroup, "Sterowanie:", display.contentCenterX, 190, "fonts/Pixellari.ttf", 66 )
+	uiGroup:insert(controlsLabel)
 
-	local slide = display.newText( sceneGroup, "Ślizg: CTRL", display.contentCenterX, 710, "fonts/Pixellari.ttf", 40 )
+	local jump = display.newText( sceneGroup, "Skok: SPACJA", display.contentCenterX, 260, "fonts/Pixellari.ttf", 50 )
+	uiGroup:insert(jump)
 
-	local menuButton = display.newText( sceneGroup, "Powrót", display.contentCenterX, 800, "fonts/Pixellari.ttf", 52 )
+	local slide = display.newText( sceneGroup, "Ślizg: CTRL", display.contentCenterX, 320, "fonts/Pixellari.ttf", 50 )
+	uiGroup:insert(slide)
+
+	local soundLabel = display.newText( sceneGroup, "Dźwięk:", display.contentCenterX, 420, "fonts/Pixellari.ttf", 66 )
+	uiGroup:insert(soundLabel)
+
+	local sliderWidth = 800
+	-- Główny volume slider
+	local bgSlider = widget.newSlider{
+		sheet = sliderSheet,
+        leftFrame = 1,
+        middleFrame = 2,
+        rightFrame = 3,
+        fillFrame = 4,
+        frameWidth = 18,
+        frameHeight = 64,
+        handleFrame = 5,
+        handleWidth = 64,
+        handleHeight = 64,
+        x = display.contentCenterX,
+        y = 510,
+        orientation = "horizontal",
+		width = 800,
+		value = 50,
+        listener = bgSliderListener
+	}
+	volumeGroup:insert( bgSlider )
+
+	local menuButton = display.newText( sceneGroup, "Powrót", display.contentCenterX, 630, "fonts/Pixellari.ttf", 60 )
 	menuButton:setFillColor( 1, 1, 1 )
+	uiGroup:insert(menuButton)
 	menuButton:addEventListener( "tap", gotoMenu )
 end
 

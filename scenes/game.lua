@@ -13,9 +13,24 @@ local myRectangle
 local floor1
 local floor2
 
+local obstacleTable = {}
+
 local livesText
 local scoreText
 local uiGroup
+
+local function createObstacle()
+ 
+	local newObstacle = display.newRect(1500, 595, 50, 50)
+	newObstacle.strokeWidth = 3
+	newObstacle:setFillColor( 0.5 )
+	newObstacle:setStrokeColor( 0, 0, 1 )
+	physics.addBody( newObstacle, "dynamic", {1500, 595, 1550, 595, 1550, 645, 1500, 645} )
+	newObstacle:setLinearVelocity(-333, 0)
+    table.insert( obstacleTable, newObstacle )
+    newObstacle.myName = "obstacle"
+
+end
 
 local function gameLoop()
 	print("-----------------------------------------------")
@@ -28,6 +43,7 @@ local function gameLoop()
 		floor2.x = floor1.x + 1400
 	end
 
+	createObstacle()
 
 end
 
@@ -95,7 +111,7 @@ function scene:show( event )
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
 		Runtime:addEventListener( "key", onKeyEvent )
-		gameLoopTimer = timer.performWithDelay( 100, gameLoop, 0 )
+		gameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
 	end
 end
 

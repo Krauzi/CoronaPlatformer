@@ -9,8 +9,7 @@ local physics = require( "physics" )
 physics.start()
 physics.setGravity(0, 6)
 
-local myRectangle
-local runningHero
+local hero
 local floor1
 local floor2
 
@@ -51,33 +50,41 @@ end
 local function onKeyEvent( event )
 	-- Jumping
 	if ( event.keyName == "space" ) then
-        if (event.phase == "down") then
-			runningHero:setLinearVelocity(0, -450)
+		-- Let him jump a little quicker before he reaches the floor 
+		if (event.phase == "down" and math.floor(hero.y) > 525) then
+			-- hero.isJumping = true
+			-- hero:pause()
+			-- hero:setSequence ( "jumpUp" )
+			-- hero:play()
+			hero:setLinearVelocity(0, -550)
         end
 	end
-	--TODO: crouching/slide
 
     return false
 end
 
-local running_options = {
-    frames = {
-        { x=0, y=0, width=143, height=189 },
-        { x=145, y=0, width=126, height=189 },
-        { x=272, y=0, width=124, height=189 },
-        { x=397, y=0, width=162, height=189 },
-		{ x=561, y=0, width=153, height=189 },
-		{ x=717, y=0, width=126, height=189 },
-		{ x=846, y=0, width=138, height=189 },
-		{ x=987, y=0, width=135, height=189 }
+local hero_options = {
+	frames = {
+        { x=0, y=1, width=143, height=187 },
+        { x=145, y=1, width=126, height=187 },
+        { x=272, y=1, width=124, height=187 },
+        { x=397, y=1, width=162, height=187 },
+		{ x=561, y=1, width=153, height=187 },
+		{ x=717, y=1, width=126, height=187 },
+		{ x=846, y=1, width=138, height=187 },
+		{ x=987, y=1, width=135, height=187 },
+		{ x=1126, y=1, width=130, height=187 },
+        { x=1269, y=1, width=112, height=187 },
+        { x=1388, y=1, width=156, height=187 },
+		{ x=1550, y=1, width=162, height=187 }
     },
-    sheetContentWidth = 1123,
+    sheetContentWidth = 1712,
     sheetContentHeight = 189
 }
-local sheet_runningHero = graphics.newImageSheet( "/images/running-sprite.png", running_options )
+local sheet_hero = graphics.newImageSheet( "/images/hero_sprite.png", hero_options )
 
 
-local sequences_runningHero = {
+local sequences_hero = {
     {
         name = "normalRun",
         start = 1,
@@ -85,12 +92,29 @@ local sequences_runningHero = {
         time = 600,
         loopCount = 0,
         loopDirection = "forward"
-    }
+	},
+	{
+        name = "jumpUp",
+        frames = { 9, 10 },
+        time = 550,
+        loopCount = 0
+    },
+    {
+        name = "jumpDown",
+        frames = { 11, 12 },
+        time = 550,
+        loopCount = 0
+	}
 }
 
 local function heroListener( event )
  
-    local thisSprite = event.target  -- "event.target" references the sprite
+	local thisSprite = event.target  -- "event.target" references the sprite
+	print(math.round(event.target.y))
+	print(hero.isJumping)
+end
+
+local function swapSprite()
 
 end
 
@@ -118,12 +142,17 @@ function scene:show( event )
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 		physics.pause()
 
-		runningHero = display.newSprite( sheet_runningHero, sequences_runningHero )
-		runningHero.x = 100
-		runningHero.y = 524
-		physics.addBody( runningHero, "dynamic", {60, 590, 110, 590, 160, 640, 60, 640} )
-		runningHero.gravityScale = 4
-		runningHero:addEventListener( "sprite", heroListener )
+		hero = display.newSprite( sheet_hero, sequences_hero )
+		hero.x = 100
+		hero.y = 524
+		hero.isJumping = false
+		physics.addBody( hero, "dynamic", {60, 590, 110, 590, 160, 640, 60, 640} )
+		hero.gravityScale = 6
+
+		hero:setStrokeColor( 1, 0 ,0 )
+		hero.strokeWidth = 1
+
+		hero:addEventListener( "sprite", heroListener )
 
 		floor1 = display.newRect( 700, 650, 1400, 50 )
 		floor1.strokeWidth = 3
@@ -145,8 +174,8 @@ function scene:show( event )
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
 		Runtime:addEventListener( "key", onKeyEvent )
-		runningHero:setSequence( "normalRun" )
-		runningHero:play()
+		hero:setSequence( "normalRun" )
+		hero:play()
 		gameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
 	end
 end

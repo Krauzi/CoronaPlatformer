@@ -142,24 +142,24 @@ local sequences_hero = {
 
 local function heroListener( event )
 	local thisSprite = event.target  -- "event.target" references the sprite
-
+	print("Sprite y: "..math.round(thisSprite.y) .. " isJumping: "..tostring(hero.isJumping))
 	if (hero.isJumping == true) then
 		if (thisSprite.sequence == "jumpStart" and math.round(thisSprite.y) == 495) then
 			hero:setSequence( "jumpUp" )
 			hero:play()
 		end
 	
-		if (thisSprite.sequence == "jumpUp" and math.round(thisSprite.y) == 394) then
+		if (thisSprite.sequence == "jumpUp" and math.round(thisSprite.y) == 300) then
 			hero:setSequence( "jumpPeak" )
 			hero:play()
 		end
 	
-		if (thisSprite.sequence == "jumpPeak" and math.round(thisSprite.y) == 396) then
+		if (thisSprite.sequence == "jumpPeak" and math.round(thisSprite.y) == 302) then
 			hero:setSequence( "jumpFall" )
 			hero:play()
 		end
 
-		if (thisSprite.sequence == "jumpFall" and math.round(thisSprite.y) == 529) then
+		if (thisSprite.sequence == "jumpFall" and (math.round(thisSprite.y) == 528 or math.round(thisSprite.y) == 529)) then
 			hero:setSequence( "normalRun" )
 			hero:play()
 			hero.isJumping = false
@@ -230,20 +230,20 @@ function scene:create( event )
 	hero.x = 100
 	hero.y = floor1.y - 140
 
+	local heroShape = { 5,-74, 52,-54, 58,20, 32,94, -22,94, -50,40, -40,-30 }
 	physics.addBody( hero, "dynamic",
-		{ density=1.0, bounce=0.0 },  -- Main body element
+		{ density=1.0, bounce=0.0, shape=heroShape },  -- Main body element
 		{ isSensor=true }  -- Foot sensor element
 	)
 
-	hero.gravityScale = 6
-
-	-- hero:setStrokeColor( 1, 0 ,0 )
-	-- hero.strokeWidth = 1
+	hero.gravityScale = 13
 
 	hero.isFixedRotation = true
 	hero.isJumping = false
 
 	hero.collision = sensorCollision
+
+	physics.setDrawMode( "hybrid" )
 
 	hero:addEventListener( "sprite", heroListener )
 	hero:addEventListener( "collision" )

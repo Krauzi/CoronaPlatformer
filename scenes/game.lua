@@ -36,13 +36,13 @@ end
 
 local function gameLoop()
 	-- Move floor that drifted off screen back to the start
-	if (floor1.x  < -700) then
-		floor1.x = floor2.x + 1400
-	end
+	-- if (floor1.x  < -700) then
+	-- 	floor1.x = floor2.x + 1400
+	-- end
 
-	if (floor2.x < -700) then
-		floor2.x = floor1.x + 1400
-	end
+	-- if (floor2.x < -700) then
+	-- 	floor2.x = floor1.x + 1400
+	-- end
 
 	-- Dispose of obstacles that drifted off screen
 	for i = #obstacleTable, 1, -1 do
@@ -60,20 +60,21 @@ end
 local function onKeyEvent( event )
 	-- Jumping
 	if ( event.keyName == "space" ) then
-		-- Let him jump a little quicker before he reaches the floor 
-		if (event.phase == "down" and math.floor(hero.y) > 525) then
-			-- hero.isJumping = true
-			-- hero:pause()
-			-- hero:setSequence ( "jumpUp" )
-			-- hero:play()
-			hero:setLinearVelocity(0, -550)
+		if (event.phase == "down" and math.floor(hero.y) > 525 ) then
+			hero.isJumping = true
+			hero:setSequence( "jumpStart" )
+			hero:play()
+
+			local vx, vy = hero:getLinearVelocity()
+			hero:setLinearVelocity( vx, 0 )
+			hero:applyLinearImpulse( nil, -550, hero.x, hero.y )
         end
 	end
 
     return false
 end
 
-local hero_options = {
+local running_hero_options = {
 	frames = {
         { x=0, y=1, width=143, height=187 },
         { x=145, y=1, width=126, height=187 },
@@ -82,17 +83,26 @@ local hero_options = {
 		{ x=561, y=1, width=153, height=187 },
 		{ x=717, y=1, width=126, height=187 },
 		{ x=846, y=1, width=138, height=187 },
-		{ x=987, y=1, width=135, height=187 },
-		{ x=1126, y=1, width=130, height=187 },
-        { x=1269, y=1, width=112, height=187 },
-        { x=1388, y=1, width=156, height=187 },
-		{ x=1550, y=1, width=162, height=187 }
+		{ x=987, y=1, width=135, height=187 }
     },
-    sheetContentWidth = 1712,
+    sheetContentWidth = 1123,
     sheetContentHeight = 189
 }
-local sheet_hero = graphics.newImageSheet( "/images/hero_sprite.png", hero_options )
 
+local sheet_running_hero = graphics.newImageSheet( "/images/running-sprite.png", running_hero_options )
+
+local jumping_hero_options = {
+	frames = {
+		{ x=1, y=1, width=130, height=187 },
+		{ x=144, y=1, width=112, height=187 },
+		{ x=263, y=1, width=156, height=187 },
+		{ x=425, y=1, width=162, height=187 }
+	},
+	sheetContentWidth = 587,
+	sheetContentHeight = 189
+}
+
+local sheet_jumping_hero = graphics.newImageSheet( "/images/jump-sprite.png", jumping_hero_options )
 
 local sequences_hero = {
     {
@@ -101,37 +111,73 @@ local sequences_hero = {
         count = 8,
         time = 600,
         loopCount = 0,
-        loopDirection = "forward"
+		loopDirection = "forward",
+		sheet = sheet_running_hero
+	},
+	{
+        name = "jumpStart",
+        frames = { 1 },
+		loopCount = 0,
+		sheet = sheet_jumping_hero
 	},
 	{
         name = "jumpUp",
-        frames = { 9, 10 },
-        time = 550,
-        loopCount = 0
-    },
+        frames = { 2 },
+		loopCount = 0,
+		sheet = sheet_jumping_hero
+	},
     {
-        name = "jumpDown",
-        frames = { 11, 12 },
-        time = 550,
-        loopCount = 0
+        name = "jumpPeak",
+        frames = { 3 },
+		loopCount = 0,
+		sheet = sheet_jumping_hero
+	},
+	{
+        name = "jumpFall",
+        frames = { 4 },
+		loopCount = 0,
+		sheet = sheet_jumping_hero
 	}
 }
 
 local function heroListener( event )
- 
 	local thisSprite = event.target  -- "event.target" references the sprite
-	--print(math.round(event.target.y))
-	--print(hero.isJumping)
+
+	if (hero.isJumping == true) then
+		if (thisSprite.sequence == "jumpStart" and math.round(thisSprite.y) == 495) then
+			hero:setSequence( "jumpUp" )
+			hero:play()
+		end
+	
+		if (thisSprite.sequence == "jumpUp" and math.round(thisSprite.y) == 394) then
+			hero:setSequence( "jumpPeak" )
+			hero:play()
+		end
+	
+		if (thisSprite.sequence == "jumpPeak" and math.round(thisSprite.y) == 396) then
+			hero:setSequence( "jumpFall" )
+			hero:play()
+		end
+
+		if (thisSprite.sequence == "jumpFall" and math.round(thisSprite.y) == 529) then
+			hero:setSequence( "normalRun" )
+			hero:play()
+			hero.isJumping = false
+		end
+	end
+
 end
 
-local function swapSprite()
-
+local function sensorCollision( self, event )
+	local collideObject = event.other
+	
 end
 
 local function scrollBackground(background)
 	background.x = 2870
 	transition.to( background, { time=60000, alpha=1, x=-960, y=background.y, onComplete=scrollBackground} )
 end
+
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -145,6 +191,46 @@ function scene:create( event )
 	uiGroup = display.newGroup()    -- Display group for UI objects like the score
 	sceneGroup:insert( uiGroup ) 
 
+	physics.pause()
+
+	background1 = display.newImageRect( "images/background_run.png", 1920, 1080 )
+	background1.x = 960
+	background1.y = display.contentCenterY
+	transition.to( background1, { time=30000, alpha=1, x=-960, y=background1.y, onComplete=scrollBackground} )
+
+	background2 = display.newImageRect( "images/background_run.png", 1920, 1080 )
+	background2.x = background1.x + 1910
+	background2.y = display.contentCenterY
+	transition.to( background2, { time=60000, alpha=1, x=-960, y=background2.y, onComplete=scrollBackground} )
+
+	floor1 = display.newRect( 700, 650, 1400, 50 )
+	floor1:setFillColor( 0.5 )
+	floor1.strokeWidth = 3
+	floor1:setStrokeColor( 1, 1, 0 )
+	floor1.id = "ground"
+	physics.addBody( floor1, "static", { bounce=0.0 } )
+
+	hero = display.newSprite( sheet_running_hero, sequences_hero )
+	hero.x = 100
+	hero.y = floor1.y - 140
+
+	physics.addBody( hero, "dynamic",
+		{ density=1.0, bounce=0.0 },  -- Main body element
+		{ isSensor=true }  -- Foot sensor element
+	)
+
+	hero.gravityScale = 6
+
+	-- hero:setStrokeColor( 1, 0 ,0 )
+	-- hero.strokeWidth = 1
+
+	hero.isFixedRotation = true
+	hero.isJumping = false
+
+	hero.collision = sensorCollision
+
+	hero:addEventListener( "sprite", heroListener )
+	hero:addEventListener( "collision" )
 end
 
 -- show()
@@ -155,54 +241,33 @@ function scene:show( event )
 
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
-		physics.pause()
 
-		background1 = display.newImageRect( "images/background_run.png", 1920, 1080 )
-		background1.x = 960
-		background1.y = display.contentCenterY
-		transition.to( background1, { time=30000, alpha=1, x=-960, y=background1.y, onComplete=scrollBackground} )
+		hero:setSequence( "normalRun" )
+		hero:play()
 
-		background2 = display.newImageRect( "images/background_run.png", 1920, 1080 )
-		background2.x = background1.x + 1910
-		background2.y = display.contentCenterY
-		transition.to( background2, { time=60000, alpha=1, x=-960, y=background2.y, onComplete=scrollBackground} )
-		
+		-- floor1 = display.newRect( 700, 650, 1400, 50 )
+		-- floor1.strokeWidth = 3
+		-- floor1.id = "floor"
+		-- floor1:setFillColor( 0.5 )
+		-- floor1:setStrokeColor( 1, 1, 0 )
+		-- physics.addBody( floor1, "static", { 0,650, 1400,650, 1400,700, 0,700 })
+		-- floor1:setLinearVelocity(-333, 0)
+		-- floor1.gravityScale = 0
 
-		hero = display.newSprite( sheet_hero, sequences_hero )
-		hero.x = 100
-		hero.y = 524
-		hero.isJumping = false
-		physics.addBody( hero, "dynamic", {60, 590, 110, 590, 160, 640, 60, 640} )
-		hero.gravityScale = 6
-		hero.isFixedRotation = true
-
-		hero:setStrokeColor( 1, 0 ,0 )
-		hero.strokeWidth = 1
-
-		hero:addEventListener( "sprite", heroListener )
-
-		floor1 = display.newRect( 700, 650, 1400, 50 )
-		floor1.strokeWidth = 3
-		floor1:setFillColor( 0.5 )
-		floor1:setStrokeColor( 1, 1, 0 )
-		physics.addBody( floor1, "kinematic", { 0,650, 1400,650, 1400,700, 0,700 } )
-		floor1:setLinearVelocity(-333, 0)
-		floor1.gravityScale = 0
-
-		floor2 = display.newRect( 2100, 650, 1400, 50 )
-		floor2.strokeWidth = 3
-		floor2:setFillColor( 0.5 )
-		floor2:setStrokeColor( 1, 1, 0 )
-		physics.addBody( floor2, "kinematic", { 1400,650, 2800,650, 2800,700, 1400,700 } )
-		floor2:setLinearVelocity(-333, 0)
-		floor2.gravityScale = 0
+		-- floor2 = display.newRect( 2100, 650, 1400, 50 )
+		-- floor2.strokeWidth = 3
+		-- floor2.id = "floor"
+		-- floor2:setFillColor( 0.5 )
+		-- floor2:setStrokeColor( 1, 1, 0 )
+		-- physics.addBody( floor2, "static", { 1400,650, 2800,650, 2800,700, 1400,700 })
+		-- floor2:setLinearVelocity(-333, 0)
+		-- floor2.gravityScale = 0
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
 		Runtime:addEventListener( "key", onKeyEvent )
-		hero:setSequence( "normalRun" )
-		hero:play()
+
 		gameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
 		spawnTimer = timer.performWithDelay(2000, createObstacle, 0)
 	end

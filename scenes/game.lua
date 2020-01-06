@@ -1,5 +1,7 @@
 
 local composer = require( "composer" )
+local heroSheet = require( "scenes.heroSheet" )
+local barbarianSheet = require( "scenes.barbarianSheet" )
 
 local scene = composer.newScene()
 
@@ -10,6 +12,16 @@ physics.start()
 physics.setGravity(0, 6)
 
 local hero
+local heroRunning = heroSheet:getRunningSheet()
+local heroSequences = heroSheet:getSequences()
+local heroShape = heroSheet:getShape()
+
+-- TYMCZASOWO
+local barbarianRunning = barbarianSheet:getRunningSheet()
+local barbarianSequences = barbarianSheet:getSequences()
+local barbarianShape = barbarianSheet:getShape()
+
+
 local floor1
 local floor2
 local background1
@@ -29,7 +41,8 @@ local function createObstacle()
 	--newObstacle:setStrokeColor( 0, 0, 1 )
 	newObstacle.x = 2050
 	newObstacle.y = 642
-	physics.addBody( newObstacle, "static", {shape={-75,46, -60,-30, -17,-20, -5,-50, 33,-15, 47,-7, 75,46}} )
+	local rockShape = {  -5,-50, 54,-13, 75,46, -75,46, -64,-20, -17,-20, -5,-50 }
+	physics.addBody( newObstacle, "static", { shape=rockShape } )
 	--newObstacle:setLinearVelocity(-600, 0)
 	transition.to( newObstacle, { time=6000, alpha=1, x=-700, y=newObstacle.y} )
     table.insert( obstacleTable, newObstacle )
@@ -77,100 +90,6 @@ local function onKeyEvent( event )
 
     return false
 end
-
-local running_hero_options = {
-	frames = {
-        { x=0, y=1, width=143, height=187 },
-        { x=145, y=1, width=126, height=187 },
-        { x=272, y=1, width=124, height=187 },
-        { x=397, y=1, width=162, height=187 },
-		{ x=561, y=1, width=153, height=187 },
-		{ x=717, y=1, width=126, height=187 },
-		{ x=846, y=1, width=138, height=187 },
-		{ x=987, y=1, width=135, height=187 }
-    },
-    sheetContentWidth = 1123,
-    sheetContentHeight = 189
-}
-
-local sheet_running_hero = graphics.newImageSheet( "/images/running-sprite.png", running_hero_options )
-
-local jumping_hero_options = {
-	frames = {
-		{ x=1, y=1, width=130, height=187 },
-		{ x=144, y=1, width=112, height=187 },
-		{ x=263, y=1, width=156, height=187 },
-		{ x=425, y=1, width=162, height=187 }
-	},
-	sheetContentWidth = 587,
-	sheetContentHeight = 189
-}
-
-local sheet_jumping_hero = graphics.newImageSheet( "/images/jump-sprite.png", jumping_hero_options )
-
-local attack_hero_options = {
-	frames = {
-		{ x=58, y=12, width=120, height=204 },
-		{ x=228, y=12, width=152, height=204 },
-		{ x=405, y=12, width=221, height=204 },
-		{ x=635, y=12, width=157, height=204 },
-		{ x=802, y=12, width=118, height=204 },
-		{ x=930, y=12, width=276, height=204 },
-		{ x=1212, y=12, width=182, height=204 },
-		{ x=1404, y=12, width=173, height=204 },
-		{ x=1623, y=12, width=130, height=204 }
-	},
-	sheetContentWidth = 1755,
-	sheetContentHeight = 217
-}
-
-local sheet_attacking_hero = graphics.newImageSheet( "/images/attack-sprite.png", attack_hero_options)
-
-
-local sequences_hero = {
-    {
-        name = "normalRun",
-        start = 1,
-        count = 8,
-        time = 600,
-        loopCount = 0,
-		loopDirection = "forward",
-		sheet = sheet_running_hero
-	},
-	{
-        name = "jumpStart",
-        frames = { 1 },
-		loopCount = 0,
-		sheet = sheet_jumping_hero
-	},
-	{
-        name = "jumpUp",
-        frames = { 2 },
-		loopCount = 0,
-		sheet = sheet_jumping_hero
-	},
-    {
-        name = "jumpPeak",
-        frames = { 3 },
-		loopCount = 0,
-		sheet = sheet_jumping_hero
-	},
-	{
-        name = "jumpFall",
-        frames = { 4 },
-		loopCount = 0,
-		sheet = sheet_jumping_hero
-	},
-	{
-		name = "attack",
-        start = 1,
-        count = 9,
-		time = 700,
-		loopCount = 0,
-		loopDirection = "forward",
-		sheet = sheet_attacking_hero
-	}
-}
 
 local function heroListener( event )
 	local thisSprite = event.target  -- "event.target" references the sprite
@@ -248,12 +167,8 @@ function scene:create( event )
 	floor1 = display.newImageRect("images/platform.png", 1400 , 305)
 	floor1.x = 700
 	floor1.y = 800
-	--700, 650, 1400, 50
-	--floor1:setFillColor( 0.5 )
-	--floor1.strokeWidth = 3
-	--floor1:setStrokeColor( 1, 1, 0 )
 	floor1.id = "ground"
-	--shape={ 0, 647‬, 1400, 647‬, 1400, 952, 0, 952 }
+
 	local floorShape = { -700,-125, 700,-125, 700,152, -700,152 }
 	physics.addBody( floor1, "static", {shape=floorShape, bounce=0.0 } )
 	transition.to( floor1, { time=3000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor} )
@@ -265,11 +180,10 @@ function scene:create( event )
 	physics.addBody( floor2, "static", { shape=floorShape, bounce=0.0 } )
 	transition.to( floor2, { time=6000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor} )
 
-	hero = display.newSprite( sheet_running_hero, sequences_hero )
+	hero = display.newSprite( heroRunning, heroSequences )
 	hero.x = 100
 	hero.y = floor1.y - 220
 
-	local heroShape = { 5,-74, 52,-54, 58,20, 32,94, -22,94, -50,40, -40,-30 }
 	physics.addBody( hero, "dynamic",
 		{ density=1.0, bounce=0.0, shape=heroShape },  -- Main body element
 		{ isSensor=true }  -- Foot sensor element
@@ -297,26 +211,8 @@ function scene:show( event )
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 
-		hero:setSequence( "attack" )
+		hero:setSequence( "normalRun" )
 		hero:play()
-
-		-- floor1 = display.newRect( 700, 650, 1400, 50 )
-		-- floor1.strokeWidth = 3
-		-- floor1.id = "floor"
-		-- floor1:setFillColor( 0.5 )
-		-- floor1:setStrokeColor( 1, 1, 0 )
-		-- physics.addBody( floor1, "static", { 0,650, 1400,650, 1400,700, 0,700 })
-		-- floor1:setLinearVelocity(-333, 0)
-		-- floor1.gravityScale = 0
-
-		-- floor2 = display.newRect( 2100, 650, 1400, 50 )
-		-- floor2.strokeWidth = 3
-		-- floor2.id = "floor"
-		-- floor2:setFillColor( 0.5 )
-		-- floor2:setStrokeColor( 1, 1, 0 )
-		-- physics.addBody( floor2, "static", { 1400,650, 2800,650, 2800,700, 1400,700 })
-		-- floor2:setLinearVelocity(-333, 0)
-		-- floor2.gravityScale = 0
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen

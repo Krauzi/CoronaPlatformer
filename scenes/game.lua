@@ -105,6 +105,25 @@ local jumping_hero_options = {
 
 local sheet_jumping_hero = graphics.newImageSheet( "/images/jump-sprite.png", jumping_hero_options )
 
+local attack_hero_options = {
+	frames = {
+		{ x=58, y=12, width=120, height=204 },
+		{ x=228, y=12, width=152, height=204 },
+		{ x=405, y=12, width=221, height=204 },
+		{ x=635, y=12, width=157, height=204 },
+		{ x=802, y=12, width=118, height=204 },
+		{ x=930, y=12, width=276, height=204 },
+		{ x=1212, y=12, width=182, height=204 },
+		{ x=1404, y=12, width=173, height=204 },
+		{ x=1623, y=12, width=130, height=204 }
+	},
+	sheetContentWidth = 1755,
+	sheetContentHeight = 217
+}
+
+local sheet_attacking_hero = graphics.newImageSheet( "/images/attack-sprite.png", attack_hero_options)
+
+
 local sequences_hero = {
     {
         name = "normalRun",
@@ -138,6 +157,15 @@ local sequences_hero = {
         frames = { 4 },
 		loopCount = 0,
 		sheet = sheet_jumping_hero
+	},
+	{
+		name = "attack",
+        start = 1,
+        count = 9,
+		time = 700,
+		loopCount = 0,
+		loopDirection = "forward",
+		sheet = sheet_attacking_hero
 	}
 }
 
@@ -266,7 +294,7 @@ function scene:show( event )
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 
-		hero:setSequence( "normalRun" )
+		hero:setSequence( "attack" )
 		hero:play()
 
 		-- floor1 = display.newRect( 700, 650, 1400, 50 )

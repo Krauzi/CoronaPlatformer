@@ -23,12 +23,13 @@ local uiGroup
 
 local function createObstacle()
  
-	local newObstacle = display.newRect(1500, 595, 50, 50)
+	local newObstacle = display.newRect(2050, 595, 50, 50)
 	newObstacle.strokeWidth = 3
 	newObstacle:setFillColor( 0.5 )
 	newObstacle:setStrokeColor( 0, 0, 1 )
 	physics.addBody( newObstacle, "dynamic", {1500, 595, 1550, 595, 1550, 645, 1500, 645} )
-	newObstacle:setLinearVelocity(-600, 0)
+	--newObstacle:setLinearVelocity(-600, 0)
+	transition.to( newObstacle, { time=6000, alpha=1, x=-700, y=newObstacle.y} )
     table.insert( obstacleTable, newObstacle )
     newObstacle.myName = "obstacle"
 
@@ -142,7 +143,7 @@ local sequences_hero = {
 
 local function heroListener( event )
 	local thisSprite = event.target  -- "event.target" references the sprite
-	print("Sprite y: "..math.round(thisSprite.y) .. " isJumping: "..tostring(hero.isJumping))
+	--print("Sprite y: "..math.round(thisSprite.y) .. " isJumping: "..tostring(hero.isJumping))
 	if (hero.isJumping == true) then
 		if (thisSprite.sequence == "jumpStart" and math.round(thisSprite.y) == 495) then
 			hero:setSequence( "jumpUp" )
@@ -179,8 +180,13 @@ local function scrollBackground(background)
 end
 
 local function scrollFloor(floor)
-	floor.x = 2090
-	transition.to( floor, { time=5980, alpha=1, x=-700, y=floor.y, onComplete=scrollFloor} )
+	--floor.x = 2050
+	if (floor == floor1) then
+		floor.x = floor2.x + 1370
+	else
+		floor.x = floor1.x + 1370
+	end
+	transition.to( floor, { time=6000, alpha=1, x=-700, y=floor.y, onComplete=scrollFloor} )
 end
 
 
@@ -210,25 +216,27 @@ function scene:create( event )
 
 	floor1 = display.newImageRect("images/platform.png", 1400 , 305)
 	floor1.x = 700
-	floor1.y = 802
+	floor1.y = 800
 	--700, 650, 1400, 50
 	--floor1:setFillColor( 0.5 )
 	--floor1.strokeWidth = 3
 	--floor1:setStrokeColor( 1, 1, 0 )
 	floor1.id = "ground"
-	physics.addBody( floor1, "static", { bounce=0.0 } )
+	--shape={ 0, 647‬, 1400, 647‬, 1400, 952, 0, 952 }
+	local floorShape = { -700,-125, 700,-125, 700,152, -700,152 }
+	physics.addBody( floor1, "static", {shape=floorShape, bounce=0.0 } )
 	transition.to( floor1, { time=3000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor} )
 
 	floor2 = display.newImageRect("images/platform.png", 1400 , 305)
-	floor2.x = 2100
-	floor2.y = 802
+	floor2.x = 2070
+	floor2.y = 800
 	floor2.id = "ground"
-	physics.addBody( floor2, "static", { bounce=0.0 } )
+	physics.addBody( floor2, "static", { shape=floorShape, bounce=0.0 } )
 	transition.to( floor2, { time=6000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor} )
 
 	hero = display.newSprite( sheet_running_hero, sequences_hero )
 	hero.x = 100
-	hero.y = floor1.y - 140
+	hero.y = floor1.y - 220
 
 	local heroShape = { 5,-74, 52,-54, 58,20, 32,94, -22,94, -50,40, -40,-30 }
 	physics.addBody( hero, "dynamic",
@@ -243,7 +251,7 @@ function scene:create( event )
 
 	hero.collision = sensorCollision
 
-	physics.setDrawMode( "hybrid" )
+	--physics.setDrawMode( "hybrid" )
 
 	hero:addEventListener( "sprite", heroListener )
 	hero:addEventListener( "collision" )

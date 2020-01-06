@@ -23,15 +23,18 @@ local uiGroup
 
 local function createObstacle()
  
-	local newObstacle = display.newRect(2050, 595, 50, 50)
-	newObstacle.strokeWidth = 3
-	newObstacle:setFillColor( 0.5 )
-	newObstacle:setStrokeColor( 0, 0, 1 )
-	physics.addBody( newObstacle, "dynamic", {1500, 595, 1550, 595, 1550, 645, 1500, 645} )
+	local newObstacle = display.newImageRect("images/rock.png", 155, 100)
+	--newObstacle.strokeWidth = 3
+	--newObstacle:setFillColor( 0.5 )
+	--newObstacle:setStrokeColor( 0, 0, 1 )
+	newObstacle.x = 2050
+	newObstacle.y = 642
+	physics.addBody( newObstacle, "static", {shape={-75,46, -60,-30, -17,-20, -5,-50, 33,-15, 47,-7, 75,46}} )
 	--newObstacle:setLinearVelocity(-600, 0)
 	transition.to( newObstacle, { time=6000, alpha=1, x=-700, y=newObstacle.y} )
     table.insert( obstacleTable, newObstacle )
-    newObstacle.myName = "obstacle"
+	newObstacle.myName = "obstacle"
+	newObstacle.isFixedRotation = true
 
 end
 
@@ -173,22 +176,22 @@ local function heroListener( event )
 	local thisSprite = event.target  -- "event.target" references the sprite
 	--print("Sprite y: "..math.round(thisSprite.y) .. " isJumping: "..tostring(hero.isJumping))
 	if (hero.isJumping == true) then
-		if (thisSprite.sequence == "jumpStart" and math.round(thisSprite.y) == 495) then
+		if (thisSprite.sequence == "jumpStart" and math.round(thisSprite.y) == 547) then
 			hero:setSequence( "jumpUp" )
 			hero:play()
 		end
 	
-		if (thisSprite.sequence == "jumpUp" and math.round(thisSprite.y) == 300) then
+		if (thisSprite.sequence == "jumpUp" and math.round(thisSprite.y) == 352) then
 			hero:setSequence( "jumpPeak" )
 			hero:play()
 		end
 	
-		if (thisSprite.sequence == "jumpPeak" and math.round(thisSprite.y) == 302) then
+		if (thisSprite.sequence == "jumpPeak" and math.round(thisSprite.y) == 356) then
 			hero:setSequence( "jumpFall" )
 			hero:play()
 		end
 
-		if (thisSprite.sequence == "jumpFall" and (math.round(thisSprite.y) == 528 or math.round(thisSprite.y) == 529)) then
+		if (thisSprite.sequence == "jumpFall" and (math.round(thisSprite.y) == 580 or math.round(thisSprite.y) == 581)) then
 			hero:setSequence( "normalRun" )
 			hero:play()
 			hero.isJumping = false
@@ -279,7 +282,7 @@ function scene:create( event )
 
 	hero.collision = sensorCollision
 
-	--physics.setDrawMode( "hybrid" )
+	physics.setDrawMode( "hybrid" )
 
 	hero:addEventListener( "sprite", heroListener )
 	hero:addEventListener( "collision" )

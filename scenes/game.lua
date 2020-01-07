@@ -37,9 +37,9 @@ _G.finalScore = 0
 local livesText
 local scoreText
 local backGroup = display.newGroup()
+local floorGroup = display.newGroup()
 local obstacleGroup = display.newGroup()
 local uiGroup = display.newGroup()
-local floorGroup = display.newGroup()
 local heroGroup = display.newGroup()
 
 
@@ -55,7 +55,7 @@ local function createObstacle()
 		--newObstacle:setStrokeColor( 0, 0, 1 )
 		newObstacle.x = 2050
 		newObstacle.y = 642
-		local rockShape = {  -5,-50, 54,-13, 75,46, -75,46, -64,-20, -17,-20, -5,-50 }
+		local rockShape = {  -5,-50, 54,-13, 75,46, -75,46, -64,-10 }
 		physics.addBody( newObstacle, "static", { shape=rockShape } )
 		--newObstacle:setLinearVelocity(-600, 0)
 		transition.to( newObstacle, { time=6000, alpha=1, x=-700, y=newObstacle.y, tag="transTag"} )
@@ -153,62 +153,8 @@ end
 
 local function onCollision( event )
  
-	if ( event.phase == "began" ) then
-		 if(hitobstacle == false) then
-
-			local obj1 = event.object1
-			local obj2 = event.object2
-		
-			if ( ( obj1.myName == "obstacle" and obj2.myName == "heroName" ) or ( obj1.myName == "heroName" and obj2.myName == "obstacle" ) )then
-				
-					lives = lives - 1
-					livesText.text = "Lives: " .. lives
-				
-				if(lives ~= 0 ) then
-					if(obj1.myName == "obstacle") then
-						hitobstacle = true
-						obj1.isSensor = true
-						visible()
-					end
-
-					if(obj2.myName == "obstacle") then
-						hitobstacle = true
-						obj2.isSensor = true
-						visible()
-					end
-				end
-				if ( lives == 0 ) then
-					died = true
-					hero.isSensor = true
-					hero:setLinearVelocity( 0, -1000 )
-					
-
-					local loseText = display.newText( uiGroup, "Przegrałeś!", display.contentCenterX, 250, "fonts/Pixellari.ttf", 100 )
-						loseText:setFillColor( 249/255, 111/255, 41/255 )
-
-						Runtime:removeEventListener("collision", onCollision)
-						transition.cancel( "transTag" )
-						timer.cancel(scoreTimer)
-						hero:pause()
-						
-					timer.performWithDelay( 3000, 
-					function() 
-						_G.finalScore = score;
-						gotoDead()
-					end )
-				end
-
-				timer.performWithDelay(500, 
-				function() 
-					hitobstacle = false
-				end )
-			end
-		end
-	end
-	return true
+	
 end
-
-Runtime:addEventListener( "collision", onCollision )
 
 local function onKeyEvent( event )
 	-- Jumping
@@ -260,9 +206,60 @@ local function heroListener( event )
 	end
 end
 
-local function sensorCollision( self, event )
-	local collideObject = event.other
-	
+-- Local (hero) object collision listener
+local function onLocalCollision( self, event )
+	if ( event.phase == "began" and hitobstacle == false) then
+
+		local obj1 = event.target
+		local obj2 = event.other
+		if (( obj1.myName == "obstacle" and obj2.myName == "heroName" ) or (obj1.myName == "heroName" and obj2.myName == "obstacle" )) then
+			
+			if(lives ~= 0 ) then
+				lives = lives - 1
+				livesText.text = "Lives: " .. lives
+
+				if(obj1.myName == "obstacle") then
+					hitobstacle = true
+					obj1.isSensor = true
+					visible()
+				end
+
+				if(obj2.myName == "obstacle") then
+					hitobstacle = true
+					obj2.isSensor = true
+					visible()
+				end
+			end
+
+			if ( lives == 0 ) then
+				died = true
+				hero.isSensor = true
+				hero:setLinearVelocity( 0, -1000 )
+				   
+				local loseText = display.newText( uiGroup, "Przegrałeś!", display.contentCenterX, 250, "fonts/Pixellari.ttf", 100 )
+				loseText:setFillColor( 249/255, 111/255, 41/255 )
+
+				hero:pause()
+				timer.cancel(scoreTimer)
+				
+				-- To tutaj powoduje bug z podwójnym ekranem końcowym
+				transition.cancel( "transTag" )
+					   
+				timer.performWithDelay( 3000,
+					function()
+						_G.finalScore = score
+						gotoDead()
+					end )
+			end
+
+			timer.performWithDelay(500,
+				function()
+					hitobstacle = false
+				end )
+		end
+   end
+
+   return true
 end
 
 local function scrollBackground(background)
@@ -287,14 +284,14 @@ end
 
 -- create()
 function scene:create( event )
+	composer.removeScene("scenes.menu")
 
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
-	uiGroup = display.newGroup()    -- Display group for UI objects like the score
 	sceneGroup:insert( backGroup )
+	sceneGroup:insert( floorGroup )
 	sceneGroup:insert( uiGroup ) 
 	sceneGroup:insert( obstacleGroup )
-	sceneGroup:insert( floorGroup )
 	sceneGroup:insert( heroGroup ) 
 
 	died = false
@@ -304,6 +301,7 @@ function scene:create( event )
 	scoreText = display.newText( uiGroup, "Score: " .. score, 640, 60, "fonts/Pixellari.ttf", 50 )
 	score = 0
 	lives = 3
+
 	scoreText.text = "Score: " .. score
 	livesText.text = "Lives: " .. lives 
 
@@ -350,12 +348,12 @@ function scene:create( event )
 	hero.isJumping = false
 	hero.myName = "heroName"
 
-	hero.collision = sensorCollision
-
-	physics.setDrawMode( "hybrid" )
+	hero.collision = onLocalCollision
 
 	hero:addEventListener( "sprite", heroListener )
 	hero:addEventListener( "collision" )
+
+	physics.setDrawMode( "hybrid" )
 end
 
 -- show()
@@ -375,6 +373,9 @@ function scene:show( event )
 		physics.start()
 		Runtime:addEventListener( "key", onKeyEvent )
 
+		-- Global collision listener
+		Runtime:addEventListener( "collision", onCollision )
+
 		gameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
 		spawnTimer = timer.performWithDelay(2000, createObstacle, 0)
 	end
@@ -392,6 +393,10 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
+		Runtime:removeEventListener( "collision", onCollision )
+		hero:removeEventListener("collision", onCollision)
+
+		physics.pause()
 		composer.removeScene( "scenes.game" )
 	end
 end
@@ -402,6 +407,8 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
+
+
 
 end
 

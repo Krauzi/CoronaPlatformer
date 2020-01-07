@@ -34,7 +34,7 @@ barbarianSheet.sheet_death_barbarian = graphics.newImageSheet( "/images/barbaria
 
 barbarianSheet.sequences_barbarian = {
     {
-        name = "normalRun",
+        name = "run",
         start = 1,
         count = 8,
         time = 600,

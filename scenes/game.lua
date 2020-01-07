@@ -41,7 +41,7 @@ local function createObstacle()
 	--newObstacle:setStrokeColor( 0, 0, 1 )
 	newObstacle.x = 2050
 	newObstacle.y = 642
-	local rockShape = {  -5,-50, 54,-13, 75,46, -75,46, -64,-20, -17,-20, -5,-50 }
+	local rockShape = {  -5,-50, 54,-13, 75,46, -75,46, -64,-10 }
 	physics.addBody( newObstacle, "static", { shape=rockShape } )
 	--newObstacle:setLinearVelocity(-600, 0)
 	transition.to( newObstacle, { time=6000, alpha=1, x=-700, y=newObstacle.y} )
@@ -111,12 +111,16 @@ local function heroListener( event )
 		end
 
 		if (thisSprite.sequence == "jumpFall" and (math.round(thisSprite.y) == 580 or math.round(thisSprite.y) == 581)) then
-			hero:setSequence( "normalRun" )
+			hero:setSequence( "run" )
 			hero:play()
 			hero.isJumping = false
 		end
 	end
 
+	if (thisSprite.sequence == "death") then
+		hero.isBodyActive = false
+		hero.y = hero.y + 10;
+	end
 end
 
 local function sensorCollision( self, event )
@@ -180,13 +184,15 @@ function scene:create( event )
 	physics.addBody( floor2, "static", { shape=floorShape, bounce=0.0 } )
 	transition.to( floor2, { time=6000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor} )
 
+	-- Create hero
 	hero = display.newSprite( heroRunning, heroSequences )
 	hero.x = 100
 	hero.y = floor1.y - 220
 
+	-- Add physics to hero
 	physics.addBody( hero, "dynamic",
-		{ density=1.0, bounce=0.0, shape=heroShape },  -- Main body element
-		{ isSensor=true }  -- Foot sensor element
+		{ density=1.0, bounce=0.0, shape=heroShape },
+		{ isSensor=true }
 	)
 
 	hero.gravityScale = 13
@@ -211,7 +217,7 @@ function scene:show( event )
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 
-		hero:setSequence( "normalRun" )
+		hero:setSequence( "run" )
 		hero:play()
 
 	elseif ( phase == "did" ) then

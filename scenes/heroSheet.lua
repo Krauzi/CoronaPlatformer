@@ -51,7 +51,7 @@ heroSheet.sheet_attacking_hero = graphics.newImageSheet( "/images/attack-sprite.
 
 heroSheet.sequences_hero = {
     {
-        name = "normalRun",
+        name = "run",
         start = 1,
         count = 8,
         time = 600,
@@ -94,7 +94,7 @@ heroSheet.sequences_hero = {
 	}
 }
 
-heroSheet.shape = { 5,-74, 52,-54, 58,20, 32,94, -22,94, -50,40, -40,-30 }
+heroSheet.shape = { 5,-74, 52,-54, 58,20, 32,94, -16,94, -50,40, -40,-30 }
 
 function heroSheet:getRunningSheet()
     return self.sheet_running_hero;

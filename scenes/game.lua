@@ -13,6 +13,10 @@ physics.start()
 physics.setGravity(0, 6)
 physics.setContinuous( false )
 
+--AUDIO
+local hitSound
+local deathSound
+
 local hero
 local heroRunning = heroSheet:getRunningSheet()
 local heroSequences = heroSheet:getSequences()
@@ -51,16 +55,29 @@ end
 
 local function createObstacle()
 	if(died == false) then
-		local newObstacle = display.newImageRect(obstacleGroup, "images/rock.png", 155, 100)
-		newObstacle.x = 2050
-		newObstacle.y = 642
+		local newObstacle
+		local whatObstacle = math.random( 2 )
+		local xDelta = math.random(-300, 100)
+		if (whatObstacle == 1) then
+			newObstacle = display.newImageRect(obstacleGroup, "images/rock.png", 155, 100)
+			newObstacle.x = 2050 + xDelta
+			newObstacle.y = 642
 
-		local rockShape = {  -5,-50, 54,-13, 75,46, -72,46, -64,-10 }
-		physics.addBody( newObstacle, "static", { shape=rockShape } )
-		transition.to( newObstacle, { time=6000, alpha=1, x=-700, y=newObstacle.y, tag="transTag"} )
+			local rockShape = {  -5,-50, 54,-13, 75,46, -72,46, -64,-10 }
+			physics.addBody( newObstacle, "static", { shape=rockShape } )
+			transition.to( newObstacle, { time=6000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
 
+			
+		else
+			newObstacle = display.newImageRect(obstacleGroup, "images/log1-pix2.png", 220, 110)
+			newObstacle.x = 2050 +xDelta
+			newObstacle.y = 652
+
+			local logShape = {  10,53, -108,11, -76,-55, -56,-55, 46,-21, 103,11, 110,26 }
+			physics.addBody( newObstacle, "static", { shape=logShape } )
+			transition.to( newObstacle, { time=6000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
+		end
 		table.insert( obstacleTable, newObstacle )
-
 		newObstacle.myName = "obstacle"
 		newObstacle.isFixedRotation = true
 	end
@@ -187,7 +204,6 @@ local function heroListener( event )
 			hero:play()
 		end
 
-		print(math.round(thisSprite.y))
 		if (thisSprite.sequence == "jumpFall" and (math.round(thisSprite.y) == 580 or math.round(thisSprite.y) == 581)) then
 			hero:setSequence( "run" )
 			hero:play()
@@ -219,6 +235,13 @@ local function onLocalCollision( self, event )
 				obj1.isSensor = true
 
 				visible()
+
+			end
+
+			if (lives > 0) then
+				audio.play( hitSound)
+			else
+				audio.play( deathSound)
 			end
 
 			if ( lives == 0 ) then
@@ -274,6 +297,8 @@ end
 
 -- create()
 function scene:create( event )
+	hitSound = audio.loadSound( "audio/hit.wav" )
+	deathSound = audio.loadSound( "audio/death.wav" )
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
 	sceneGroup:insert( backGroup )
@@ -341,7 +366,7 @@ function scene:create( event )
 	hero:addEventListener( "sprite", heroListener )
 	hero:addEventListener( "collision" )
 
-	physics.setDrawMode( "hybrid" )
+	--physics.setDrawMode( "hybrid" )
 end
 
 -- show()

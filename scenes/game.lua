@@ -1,15 +1,17 @@
 
 local composer = require( "composer" )
+local collisionFilters = require( "plugin.collisionFilters" )
+
 local heroSheet = require( "scenes.heroSheet" )
 local barbarianSheet = require( "scenes.barbarianSheet" )
 
 local scene = composer.newScene()
-
 --------------------------------------------------------------------------------------
 
 local physics = require( "physics" )
 physics.start()
 physics.setGravity(0, 6)
+physics.setContinuous( false )
 
 local hero
 local heroRunning = heroSheet:getRunningSheet()
@@ -50,31 +52,21 @@ end
 local function createObstacle()
 	if(died == false) then
 		local newObstacle = display.newImageRect(obstacleGroup, "images/rock.png", 155, 100)
-		--newObstacle.strokeWidth = 3
-		--newObstacle:setFillColor( 0.5 )
-		--newObstacle:setStrokeColor( 0, 0, 1 )
 		newObstacle.x = 2050
 		newObstacle.y = 642
-		local rockShape = {  -5,-50, 54,-13, 75,46, -75,46, -64,-10 }
+
+		local rockShape = {  -5,-50, 54,-13, 75,46, -72,46, -64,-10 }
 		physics.addBody( newObstacle, "static", { shape=rockShape } )
-		--newObstacle:setLinearVelocity(-600, 0)
 		transition.to( newObstacle, { time=6000, alpha=1, x=-700, y=newObstacle.y, tag="transTag"} )
+
 		table.insert( obstacleTable, newObstacle )
+
 		newObstacle.myName = "obstacle"
 		newObstacle.isFixedRotation = true
 	end
 end
 
 local function gameLoop()
-	-- Move floor that drifted off screen back to the start
-	-- if (floor1.x  < -700) then
-	-- 	floor1.x = floor2.x + 1400
-	-- end
-
-	-- if (floor2.x < -700) then
-	-- 	floor2.x = floor1.x + 1400
-	-- end
-
 	-- Dispose of obstacles that drifted off screen
 	if(died == false and hitobstacle == false) then
 		for i = #obstacleTable, 1, -1 do
@@ -112,7 +104,7 @@ local function checkrun()
 	end
 end
 
-scoreTimer = timer.performWithDelay(1000, timerScore, 0)
+ScoreTiemr = timer.performWithDelay(1000, timerScore, 0)
 timer.performWithDelay(500, stay, 0)
 timer.performWithDelay(1000, checkrun, 0)
 
@@ -176,7 +168,9 @@ end
 
 local function heroListener( event )
 	local thisSprite = event.target  -- "event.target" references the sprite
+
 	--print("Sprite y: "..math.round(thisSprite.y) .. " isJumping: "..tostring(hero.isJumping))
+
 	if (hero.isJumping == true) then
 		if (thisSprite.sequence == "jumpStart" and math.round(thisSprite.y) == 547) then
 			hero:setSequence( "jumpUp" )
@@ -209,26 +203,21 @@ end
 -- Local (hero) object collision listener
 local function onLocalCollision( self, event )
 	if ( event.phase == "began" and hitobstacle == false) then
+		local obj1 = event.other
+		if ( obj1.myName == "obstacle" ) then
 
-		local obj1 = event.target
-		local obj2 = event.other
-		if (( obj1.myName == "obstacle" and obj2.myName == "heroName" ) or (obj1.myName == "heroName" and obj2.myName == "obstacle" )) then
-			
+			print("SELF: " .. self.x .. " " .. self.y)
+			print("OBJ: " .. obj1.x .. " " .. obj1.y)
+			print(tostring(physics.getAverageCollisionPositions()))
+
 			if(lives ~= 0 ) then
 				lives = lives - 1
 				livesText.text = "Lives: " .. lives
 
-				if(obj1.myName == "obstacle") then
-					hitobstacle = true
-					obj1.isSensor = true
-					visible()
-				end
+				hitobstacle = true
+				obj1.isSensor = true
 
-				if(obj2.myName == "obstacle") then
-					hitobstacle = true
-					obj2.isSensor = true
-					visible()
-				end
+				visible()
 			end
 
 			if ( lives == 0 ) then
@@ -240,10 +229,10 @@ local function onLocalCollision( self, event )
 				loseText:setFillColor( 249/255, 111/255, 41/255 )
 
 				hero:pause()
-				timer.cancel(scoreTimer)
+				timer.cancel(ScoreTiemr)
 				
 				-- To tutaj powoduje bug z podwójnym ekranem końcowym
-				transition.cancel( "transTag" )
+				-- transition.cancel( "transTag")
 					   
 				timer.performWithDelay( 3000,
 					function()
@@ -284,8 +273,6 @@ end
 
 -- create()
 function scene:create( event )
-	composer.removeScene("scenes.menu")
-
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
 	sceneGroup:insert( backGroup )
@@ -376,8 +363,8 @@ function scene:show( event )
 		-- Global collision listener
 		Runtime:addEventListener( "collision", onCollision )
 
-		gameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
-		spawnTimer = timer.performWithDelay(2000, createObstacle, 0)
+		GameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
+		SpawnTimer = timer.performWithDelay(2000, createObstacle, 0)
 	end
 end
 
@@ -389,6 +376,8 @@ function scene:hide( event )
 	local phase = event.phase
 
 	if ( phase == "will" ) then
+		transition.cancel( "transTag" )
+
 		-- Code here runs when the scene is on screen (but is about to go off screen)
 
 	elseif ( phase == "did" ) then

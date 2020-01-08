@@ -14,7 +14,6 @@ end
 -- create()
 function scene:create( event )
 	local sceneGroup = self.view
-	composer.removeScene("scenes.game")
 
 	local background = display.newImageRect( sceneGroup, "/images/background.jpg", 1280, 720 )
 	background.x = display.contentCenterX

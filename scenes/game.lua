@@ -177,16 +177,17 @@ local function heroListener( event )
 			hero:play()
 		end
 	
-		if (thisSprite.sequence == "jumpUp" and math.round(thisSprite.y) == 352) then
+		if (thisSprite.sequence == "jumpUp" and math.round(thisSprite.y) == 342) then
 			hero:setSequence( "jumpPeak" )
 			hero:play()
 		end
 	
-		if (thisSprite.sequence == "jumpPeak" and math.round(thisSprite.y) == 356) then
+		if (thisSprite.sequence == "jumpPeak" and math.round(thisSprite.y) == 342) then
 			hero:setSequence( "jumpFall" )
 			hero:play()
 		end
 
+		print(math.round(thisSprite.y))
 		if (thisSprite.sequence == "jumpFall" and (math.round(thisSprite.y) == 580 or math.round(thisSprite.y) == 581)) then
 			hero:setSequence( "run" )
 			hero:play()
@@ -326,7 +327,7 @@ function scene:create( event )
 	-- Add physics to hero
 	physics.addBody( hero, "dynamic",
 		{ density=1.0, bounce=0.0, shape=heroShape },
-		{ isSensor=true }
+		{ isSensor=true,  shape=heroShape }
 	)
 
 	hero.gravityScale = 13

@@ -41,9 +41,12 @@ settings =
 	-- Plugins section
 	--
 	plugins =
-	{
-		
-	},
+    {
+        ["plugin.collisionFilters"] =
+        {
+            publisherId = "com.coronalabs"
+        },
+    },
 
 	--
 	-- Project section

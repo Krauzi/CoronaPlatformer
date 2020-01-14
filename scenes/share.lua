@@ -14,6 +14,9 @@ local BackButton
 local finalshare 
 local MenuButton 
 local ShareGroup = display.newGroup()
+local wrong
+local wrongButton
+local wrongname = 0
 
 local function goBack()
     composer.gotoScene( "scenes.dead", { time=400, effect="crossFade" } )
@@ -23,17 +26,46 @@ local function gotoMenu()
 	composer.gotoScene( "scenes.menu", { time=400, effect="crossFade" } )
 end
 
+local function panel()
+	display.remove(wrong)
+	display.remove(wrongButton)
+	field = native.newTextField( display.contentCenterX, 350, 390, 65 )
+    field.align = "center"
+    field.font = native.newFont( "fonts/Pixellari.ttf", 50 )
+	field.text = "Gracz"
+	if(wrongname == 1) then
+		ShareButton.isActive = true	
+		ShareButton.isVisible = true
+		nametext.isVisible = true
+		BackButton.isActive = true
+		BackButton.isVisible = true
+		wrongname = 0
+	end
+end
+
+local function delete()
+	display.remove(field)
+	ShareButton.isActive = false
+	ShareButton.isVisible = false
+	nametext.isVisible = false
+	BackButton.isActive = false
+	BackButton.isVisible = false
+	wrongname = 1
+end
+
+
+
 local function Success()
-	display.remove(finalshare)
-    finalshare = display.newText("Udostępniłeś wynik " .. name .. " !!!\nTwój wynik to " .. _G.finalScore , display.contentCenterX, 360, "fonts/Pixellari.ttf", 64 )
-    finalshare:setFillColor( 1, 1, 1 )
-    display.remove(field)
-    display.remove(ShareButton)
-    display.remove(nametext)
-    display.remove(BackButton)
-    MenuButton = display.newText("Wróć", display.contentCenterX, 570, "fonts/Pixellari.ttf", 64 )
-    MenuButton:setFillColor( 1, 1, 1  )
-    MenuButton:addEventListener( "tap", gotoMenu)
+		display.remove(finalshare)
+		finalshare = display.newText("Udostępniłeś wynik " .. name .. " !!!\nTwój wynik to " .. _G.finalScore , display.contentCenterX, 360, "fonts/Pixellari.ttf", 64 )
+		finalshare:setFillColor( 1, 1, 1 )
+		display.remove(field)
+		display.remove(ShareButton)
+		display.remove(nametext)
+		display.remove(BackButton)
+		MenuButton = display.newText("Wróć", display.contentCenterX, 570, "fonts/Pixellari.ttf", 64 )
+		MenuButton:setFillColor( 1, 1, 1  )
+		MenuButton:addEventListener( "tap", gotoMenu)
 end
 
 local function networkListener( event )
@@ -51,18 +83,41 @@ end
 local function Share()
 
 	name = field.text
+	print("Długosć nazwy " .. string.len( name ) )
 
-    local headers = {}
-	headers["Content-Type"] = "application/json"
-	local body = {
-		["name"] = name,
-		["score"] = _G.finalScore,
-		["playerId"] = system.getInfo("deviceID")
-	}
-	local params = {}
-	params.headers = headers
-	params.body = json.encode(body)
-	network.request( "http://mostalecki.pythonanywhere.com/highscores/", "POST", networkListener, params )
+	if(string.len( name ) > 2 and string.len( name ) < 21) then
+		local headers = {}
+		headers["Content-Type"] = "application/json"
+		local body = {
+			["name"] = name,
+			["score"] = _G.finalScore,
+			["playerId"] = system.getInfo("deviceID")
+		}
+		local params = {}
+		params.headers = headers
+		params.body = json.encode(body)
+		network.request( "http://mostalecki.pythonanywhere.com/highscores/", "POST", networkListener, params )
+	end
+
+	if(string.len( name ) < 3) then
+		delete()
+		wrong = display.newText("Minilamna długość nazwy gracza to 3 znaki !", display.contentCenterX, 360, "fonts/Pixellari.ttf", 50 )
+		wrong:setFillColor( 1, 1, 1 )
+
+		wrongButton = display.newText("OK", display.contentCenterX, 570, "fonts/Pixellari.ttf", 64 )
+		wrongButton:setFillColor( 1, 1, 1  )
+		wrongButton:addEventListener( "tap", panel)
+	end
+
+	if(string.len( name ) > 20) then 
+		delete()
+		wrong = display.newText("Maksymalna długość nazwy gracza to 20 znaków !", display.contentCenterX, 360, "fonts/Pixellari.ttf", 50 )
+		wrong:setFillColor( 1, 1, 1 )
+
+		wrongButton = display.newText("OK", display.contentCenterX, 570, "fonts/Pixellari.ttf", 64 )
+		wrongButton:setFillColor( 1, 1, 1  )
+		wrongButton:addEventListener( "tap", panel)
+	end
 end
 
 
@@ -84,10 +139,7 @@ function scene:create( event )
     nametext = display.newText( sceneGroup, "Wpisz nazwę gracza: ", display.contentCenterX, 270, "fonts/Pixellari.ttf", 64 )
 	nametext:setFillColor( 1, 1, 1 )
 
-    field = native.newTextField( display.contentCenterX, 350, 390, 65 )
-    field.align = "center"
-    field.font = native.newFont( "fonts/Pixellari.ttf", 50 )
-
+    panel()
 
 	ShareButton = display.newText( sceneGroup, "Udostępnij", display.contentCenterX, 500, "fonts/Pixellari.ttf", 64 )
 	ShareButton:setFillColor( 1, 1, 1 )
@@ -120,8 +172,10 @@ function scene:hide( event )
 
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is on screen (but is about to go off screen)
-        display.remove(finalshare)
-        display.remove(MenuButton)
+		display.remove(finalshare)
+		display.remove(field)
+		display.remove(MenuButton)
+		display.remove(BackButton)
 	elseif ( phase == "did" ) then
         -- Code here runs immediately after the scene goes entirely off screen
         composer.removeScene( "scenes.share" )

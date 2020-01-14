@@ -7,6 +7,10 @@ local function gotoMenu()
 	composer.gotoScene( "scenes.menu", { time=400, effect="crossFade" } )
 end
 
+local function gotoShare()
+	composer.gotoScene( "scenes.share", { time=400, effect="crossFade" } )
+end
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -25,7 +29,11 @@ function scene:create( event )
 	local scoretext = display.newText( sceneGroup, "Twój wynik: " .. _G.finalScore, display.contentCenterX, 280, "fonts/Pixellari.ttf", 86 )
 	scoretext:setFillColor( 1, 1, 1)
 	
-	local MenuButton = display.newText( sceneGroup, "Wróć", display.contentCenterX, 400, "fonts/Pixellari.ttf", 64 )
+	local goButton = display.newText( sceneGroup, "Udostępnij swój wynik!", display.contentCenterX, 420, "fonts/Pixellari.ttf", 64 )
+	goButton:setFillColor( 1, 1, 1 )
+	goButton:addEventListener( "tap", gotoShare)
+
+	local MenuButton = display.newText( sceneGroup, "Menu", display.contentCenterX, 500, "fonts/Pixellari.ttf", 64 )
 	MenuButton:setFillColor( 1, 1, 1 )
 	MenuButton:addEventListener( "tap", gotoMenu)
 end

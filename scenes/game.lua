@@ -99,7 +99,7 @@ end
 
 local function timerScore()
 	score = score + 1
-	scoreText.text = "Score: " .. score 
+	scoreText.text = "Wynik: " .. score 
 end
 
 --Hero stay on position after hit an obstacle
@@ -229,7 +229,7 @@ local function onLocalCollision( self, event )
 
 			if(lives ~= 0 ) then
 				lives = lives - 1
-				livesText.text = "Lives: " .. lives
+				livesText.text = "Życia: " .. lives
 
 				hitobstacle = true
 				obj1.isSensor = true
@@ -310,13 +310,13 @@ function scene:create( event )
 	died = false
 	physics.pause()
 
-	livesText = display.newText( uiGroup, "Lives: " .. lives, 100, 60, "fonts/Pixellari.ttf", 50 )
-	scoreText = display.newText( uiGroup, "Score: " .. score, 640, 60, "fonts/Pixellari.ttf", 50 )
+	livesText = display.newText( uiGroup, "Życia: " .. lives, 100, 60, "fonts/Pixellari.ttf", 50 )
+	scoreText = display.newText( uiGroup, "Wynik: " .. score, 640, 60, "fonts/Pixellari.ttf", 50 )
 	score = 0
 	lives = 3
 
-	scoreText.text = "Score: " .. score
-	livesText.text = "Lives: " .. lives 
+	scoreText.text = "Wynik: " .. score
+	livesText.text = "Życia: " .. lives 
 
 	background1 = display.newImageRect( backGroup, "images/background_run.png", 1920, 1080 )
 	background1.x = 960

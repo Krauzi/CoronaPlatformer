@@ -3,6 +3,7 @@ local composer = require( "composer" )
 local scene = composer.newScene()
 
 --------------------------------------------------------------------------------------
+local json = require( "json") 
 
 local musicTrack
 local name
@@ -22,11 +23,8 @@ local function gotoMenu()
 	composer.gotoScene( "scenes.menu", { time=400, effect="crossFade" } )
 end
 
-local function Share()
-    
-    
-    print(field.text)
-    name = field.text
+local function Success()
+	display.remove(finalshare)
     finalshare = display.newText("Udostępniłeś wynik " .. name .. " !!!\nTwój wynik to " .. _G.finalScore , display.contentCenterX, 360, "fonts/Pixellari.ttf", 64 )
     finalshare:setFillColor( 1, 1, 1 )
     display.remove(field)
@@ -36,6 +34,35 @@ local function Share()
     MenuButton = display.newText("Wróć", display.contentCenterX, 570, "fonts/Pixellari.ttf", 64 )
     MenuButton:setFillColor( 1, 1, 1  )
     MenuButton:addEventListener( "tap", gotoMenu)
+end
+
+local function networkListener( event )
+ 
+    if ( event.isError ) then
+		print( "Network error: ", event.response )
+		finalshare = display.newText("Brak połączenia!", display.contentCenterX, 420, "fonts/Pixellari.ttf", 64 )
+    	finalshare:setFillColor( 1, 0, 0 )
+    else
+		print ( "RESPONSE: " .. event.response )
+		Success()
+    end
+end
+
+local function Share()
+
+	name = field.text
+
+    local headers = {}
+	headers["Content-Type"] = "application/json"
+	local body = {
+		["name"] = name,
+		["score"] = _G.finalScore,
+		["playerId"] = system.getInfo("deviceID")
+	}
+	local params = {}
+	params.headers = headers
+	params.body = json.encode(body)
+	network.request( "http://mostalecki.pythonanywhere.com/highscores/", "POST", networkListener, params )
 end
 
 

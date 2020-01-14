@@ -16,6 +16,10 @@ local function gotoSettings()
     composer.gotoScene( "scenes.settings", { time=400, effect="crossFade" } )
 end
 
+local function gotoHighscores()
+    composer.gotoScene( "scenes.highscores", { time=400, effect="crossFade" } )
+end
+
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -23,9 +27,10 @@ end
 
 -- create()
 function scene:create( event )
+	print(system.getInfo("deviceID"))
 	local sceneGroup = self.view
 
-	local background = display.newImageRect( sceneGroup, "/images/background.jpg", 1280, 720 )
+	local background = display.newImageRect( sceneGroup, "./images/background.jpg", 1280, 720 )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
@@ -40,8 +45,12 @@ function scene:create( event )
 	local settingsButton = display.newText( sceneGroup, "Ustawienia", display.contentCenterX, 470, "fonts/Pixellari.ttf", 64 )
 	settingsButton:setFillColor( 1, 1, 1  )
 
+	local highscoresButton = display.newText( sceneGroup, "Najlepsze wyniki", display.contentCenterX, 540, "fonts/Pixellari.ttf", 64 )
+	highscoresButton:setFillColor( 1, 1, 0  )
+
 	playButton:addEventListener( "tap", gotoGame )
 	settingsButton:addEventListener( "tap", gotoSettings )
+	highscoresButton:addEventListener( "tap", gotoHighscores )
 
 	musicTrack = audio.loadStream( "audio/main-menu.ogg" )
 end

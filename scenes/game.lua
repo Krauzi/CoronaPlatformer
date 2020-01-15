@@ -16,7 +16,12 @@ physics.setContinuous( false )
 
 --AUDIO
 local hitSound
+local jumpEffect
 local deathSound
+local deathBarbarian
+local deathEagle
+local swordSwingSound
+
 
 local hero
 local heroRunning = heroSheet:getRunningSheet()
@@ -60,6 +65,11 @@ local function gotoDead()
 	composer.gotoScene( "scenes.dead", { time=400, effect="crossFade" } )
 end
 
+local function onCollisionDelay(object)
+    --change the body's active state to false
+    object.isBodyActive = false
+end
+
 local function createObstacle()
 	if(died == false) then
 		local newObstacle
@@ -95,6 +105,7 @@ local function createObstacle()
 			newObstacle.x = 2050 + xDelta
 			newObstacle.y = floor1.y - 220
 			newObstacle.myName = "enemy"
+			newObstacle.type = "barbarian"
 
 			newObstacle:setSequence( "run" )
 			newObstacle:play()
@@ -118,6 +129,7 @@ local function spawnEnemy()
 		newEnemy = display.newSprite(heroGroup, eagleFlying, eagleSequences )
 		newEnemy.x = 2050 + xDelta
 		newEnemy.y = 50
+		newEnemy.type = "eagle"
 
 		newEnemy:setSequence( "fly" )
 		newEnemy:play()
@@ -228,13 +240,15 @@ local function onKeyEvent( event )
 	if(died == false) then 
 		if ( event.keyName == "space" ) then
 			if (event.phase == "down" and math.floor(hero.y) > 525 ) then
-				hero.isJumping = true
+				hero:applyLinearImpulse( nil, -550, hero.x, hero.y )
 				hero:setSequence( "jumpStart" )
 				hero:play()
 
-				--local vx, vy = hero:getLinearVelocity()
-				--hero:setLinearVelocity( vx, 0 )
-				hero:applyLinearImpulse( nil, -550, hero.x, hero.y )
+				if (audio.isChannelPlaying( 32 ) == false) then
+					audio.play( jumpEffect, {channel = 32} )
+				end
+
+				hero.isJumping = true 
 			end
 		end
 		if ( event.keyName == "x") then
@@ -242,6 +256,11 @@ local function onKeyEvent( event )
 				hero.isAttacking = true
 				hero:setSequence( "attack" )
 				hero:play()
+
+				if (audio.isChannelPlaying( 30 ) == false) then
+					audio.play( swordSwingSound, {channel = 30} )
+				end
+
 				AttackTimer = timer.performWithDelay(700, finishAttack, 1)
 			end
 		end
@@ -285,7 +304,31 @@ end
 
 local function onAttackCollision( self, event )
 	if (event.other.myName == "enemy" and hero.isAttacking == true) then
-		display.remove( event.other )
+		if (event.other.type == "eagle") then
+			if (audio.isChannelPlaying( 20 ) == false) then
+				audio.play( deathEagle, {channel = 20} )
+			end
+
+			display.remove( event.other )
+		else
+			if (audio.isChannelPlaying( 10 ) == false) then
+				audio.play( deathBarbarian, {channel = 10} )
+			end
+
+			local barbarian = event.other
+			hero.isAttackingBarbarian = true
+			barbarian.isSensor = true
+			barbarian:setSequence( "death" )
+			barbarian:play()
+
+			transition.to( barbarian, { time=500,  y=(barbarian.y + 10),onComplete=
+				function()
+					hero.isAttackingBarbarian = false
+					display.remove( barbarian )
+				end
+			})
+		end
+
 		--event.other.isSensor = true
 	end
 end
@@ -295,10 +338,7 @@ local function onLocalCollision( self, event )
 	if ( event.phase == "began" and hitobstacle == false) then
 		local obj1 = event.other
 
-
-		if ( obj1.myName == "obstacle" or obj1.myName == "enemy") then
-
-
+		if ((obj1.myName == "obstacle" or obj1.myName == "enemy") and hero.isAttackingBarbarian == false) then
 			print("SELF: " .. self.x .. " " .. self.y)
 			print("OBJ: " .. obj1.x .. " " .. obj1.y)
 			print(tostring(physics.getAverageCollisionPositions()))
@@ -348,7 +388,7 @@ local function onLocalCollision( self, event )
 				function()
 					hitobstacle = false
 				end )
-			end
+		end
    end
 
    return true
@@ -401,6 +441,12 @@ end
 function scene:create( event )
 	hitSound = audio.loadSound( "audio/hit.wav" )
 	deathSound = audio.loadSound( "audio/death.wav" )
+	deathBarbarian = audio.loadSound ( "audio/HAAAAAAAAAAAAAAAUUUUUUUUUUUUUH.mp3" )
+	deathEagle = audio.loadSound ( "audio/eagleDeath.mp3" )
+	swordSwingSound = audio.loadSound ( "audio/sword_swing.mp3" )
+	jumpEffect = audio.loadSound( "audio/JumpEffect.mp3" )
+
+
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
 	sceneGroup:insert( backGroup )
@@ -467,6 +513,7 @@ function scene:create( event )
 	hero.isJumping = false
 	hero.isAttacking = false
 	hero.myName = "heroName"
+	hero.isAttackingBarbarian = false
 
 	hero.collision = onLocalCollision
 

@@ -101,7 +101,7 @@ local function Share()
 
 	if(string.len( name ) < 3) then
 		delete()
-		wrong = display.newText("Minilamna długość nazwy gracza to 3 znaki !", display.contentCenterX, 360, "fonts/Pixellari.ttf", 50 )
+		wrong = display.newText("Minimalna długość nazwy gracza to 3 znaki !", display.contentCenterX, 360, "fonts/Pixellari.ttf", 50 )
 		wrong:setFillColor( 1, 1, 1 )
 
 		wrongButton = display.newText("OK", display.contentCenterX, 570, "fonts/Pixellari.ttf", 64 )

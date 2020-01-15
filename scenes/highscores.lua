@@ -31,7 +31,7 @@ local function Success(jsonTable)
     	topText:setFillColor( 1, 0, 0 )
 	else
 		display.remove(topText)
-		topText = display.newText("Najwyższe wyniki:", display.contentCenterX, 100, "fonts/Pixellari.ttf", 64 )
+		topText = display.newText("Najlepsze wyniki:", display.contentCenterX, 100, "fonts/Pixellari.ttf", 64 )
 		topText:setFillColor( 1, 1, 0 )
 		
 		local scoresString = ""

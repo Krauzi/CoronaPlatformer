@@ -4,6 +4,8 @@ local collisionFilters = require( "plugin.collisionFilters" )
 
 local heroSheet = require( "scenes.heroSheet" )
 local barbarianSheet = require( "scenes.barbarianSheet" )
+local eagleSheet = require( "scenes.eagleSheet" )
+
 
 local scene = composer.newScene()
 --------------------------------------------------------------------------------------
@@ -27,6 +29,9 @@ local attackField
 local barbarianRunning = barbarianSheet:getRunningSheet()
 local barbarianSequences = barbarianSheet:getSequences()
 local barbarianShape = barbarianSheet:getShape()
+local eagleFlying = eagleSheet:getFlyingSheet()
+local eagleSequences = eagleSheet:getSequences()
+local eagleShape = eagleSheet:getShape()
 
 
 local floor1
@@ -469,7 +474,7 @@ function scene:create( event )
 
 	local pistonJoint = physics.newJoint( "pivot", hero, attackField, hero.x, hero.y, 0, 0 )
 
-	physics.setDrawMode( "hybrid" )
+	--physics.setDrawMode( "hybrid" )
 end
 
 -- show()

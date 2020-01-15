@@ -60,7 +60,7 @@ function scene:create( event )
 	local jump = display.newText( sceneGroup, "Skok: SPACJA", display.contentCenterX, 260, "fonts/Pixellari.ttf", 50 )
 	uiGroup:insert(jump)
 
-	local slide = display.newText( sceneGroup, "Ślizg: CTRL", display.contentCenterX, 320, "fonts/Pixellari.ttf", 50 )
+	local slide = display.newText( sceneGroup, "Atak: X", display.contentCenterX, 320, "fonts/Pixellari.ttf", 50 )
 	uiGroup:insert(slide)
 
 	local soundLabel = display.newText( sceneGroup, "Dźwięk:", display.contentCenterX, 420, "fonts/Pixellari.ttf", 66 )

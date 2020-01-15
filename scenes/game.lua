@@ -39,6 +39,8 @@ local eagleSequences = eagleSheet:getSequences()
 local eagleShape = eagleSheet:getShape()
 
 local initialSpeed = -550
+local obstacleSpawnDelay = 2000
+local EnemySpawnDelay = 6000
 
 local floor1
 local floor2
@@ -432,6 +434,24 @@ local function accelerate()
 	end
 end
 
+local function changeSpawnRate()
+	obstacleSpawnDelay = obstacleSpawnDelay - 100
+	EnemySpawnDelay = EnemySpawnDelay - 100
+
+	print("ObstacleDelay: " .. obstacleSpawnDelay)
+	print("EnemyDelay: " .. EnemySpawnDelay)
+
+	if (ObstacleDelay == 1500) then
+		timer.cancel(spawnRateTimer)
+	end
+
+	timer.cancel(ObstacleSpawnTimer)
+	timer.cancel(EnemySpawnTimer)
+
+	ObstacleSpawnTimer = timer.performWithDelay(obstacleSpawnDelay, createObstacle, 0)
+	EnemySpawnTimer = timer.performWithDelay(EnemySpawnDelay, spawnEnemy, 0)
+end
+
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -560,10 +580,11 @@ function scene:show( event )
 		Runtime:addEventListener( "collision", onCollision )
 
 		GameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
-		ObstacleSpawnTimer = timer.performWithDelay(2000, createObstacle, 0)
+		ObstacleSpawnTimer = timer.performWithDelay(obstacleSpawnDelay, createObstacle, 0)
 		ScrollTimer = timer.performWithDelay(200, scrollFloor, 0)
 		accelerationTimer = timer.performWithDelay(3000, accelerate, 0)
-		EnemySpawnTimer = timer.performWithDelay(6000, spawnEnemy, 0)
+		EnemySpawnTimer = timer.performWithDelay(EnemySpawnDelay, spawnEnemy, 0)
+		spawnRateTimer = timer.performWithDelay(15000, changeSpawnRate, 0)
 	end
 end
 

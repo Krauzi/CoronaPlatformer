@@ -469,7 +469,7 @@ function scene:create( event )
 
 	local pistonJoint = physics.newJoint( "pivot", hero, attackField, hero.x, hero.y, 0, 0 )
 
-	--physics.setDrawMode( "hybrid" )
+	physics.setDrawMode( "hybrid" )
 end
 
 -- show()

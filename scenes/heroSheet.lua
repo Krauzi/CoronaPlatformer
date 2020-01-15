@@ -88,7 +88,7 @@ heroSheet.sequences_hero = {
         start = 1,
         count = 9,
 		time = 700,
-		loopCount = 0,
+		loopCount = 1,
 		loopDirection = "forward",
 		sheet = heroSheet.sheet_attacking_hero
 	}

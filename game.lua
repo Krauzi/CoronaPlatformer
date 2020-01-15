@@ -6,6 +6,7 @@ local heroSheet = require( "scenes.heroSheet" )
 local barbarianSheet = require( "scenes.barbarianSheet" )
 local eagleSheet = require( "scenes.eagleSheet" )
 
+
 local scene = composer.newScene()
 --------------------------------------------------------------------------------------
 
@@ -28,12 +29,10 @@ local attackField
 local barbarianRunning = barbarianSheet:getRunningSheet()
 local barbarianSequences = barbarianSheet:getSequences()
 local barbarianShape = barbarianSheet:getShape()
-
 local eagleFlying = eagleSheet:getFlyingSheet()
 local eagleSequences = eagleSheet:getSequences()
 local eagleShape = eagleSheet:getShape()
 
-local initialSpeed = -550
 
 local floor1
 local floor2
@@ -72,10 +71,8 @@ local function createObstacle()
 			newObstacle.myName = "obstacle"
 
 			local rockShape = {  -5,-50, 54,-13, 75,46, -72,46, -64,-10 }
-			--physics.addBody( newObstacle, "static", { shape=rockShape } )
-			--transition.to( newObstacle, { time=6000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
-			physics.addBody( newObstacle, "kinematic", { shape=rockShape } )
-			newObstacle:setLinearVelocity(initialSpeed, 0)
+			physics.addBody( newObstacle, "static", { shape=rockShape } )
+			transition.to( newObstacle, { time=6000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
 
 			
 		elseif (whatObstacle == 2) then
@@ -85,10 +82,8 @@ local function createObstacle()
 			newObstacle.myName = "obstacle"
 
 			local logShape = {  10,53, -108,11, -76,-55, -56,-55, 46,-21, 103,11, 110,26 }
-			--physics.addBody( newObstacle, "static", { shape=logShape } )
-			--transition.to( newObstacle, { time=6000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
-			physics.addBody( newObstacle, "kinematic", { shape=logShape } )
-			newObstacle:setLinearVelocity(initialSpeed, 0)
+			physics.addBody( newObstacle, "static", { shape=logShape } )
+			transition.to( newObstacle, { time=6000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
 			
 		else
 			newObstacle = display.newSprite(heroGroup, barbarianRunning, barbarianSequences )
@@ -99,10 +94,8 @@ local function createObstacle()
 			newObstacle:setSequence( "run" )
 			newObstacle:play()
 
-			--physics.addBody( newObstacle, "static", { shape=barbarianShape } )
-			--transition.to( newObstacle, { time=5000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
-			physics.addBody( newObstacle, "kinematic", { shape=barbarianShape } )
-			newObstacle:setLinearVelocity(initialSpeed, 0)
+			physics.addBody( newObstacle, "static", { shape=barbarianShape } )
+			transition.to( newObstacle, { time=5000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
 		end
 		newObstacle.isFixedRotation = true
 		table.insert( obstacleTable, newObstacle )
@@ -115,20 +108,29 @@ local function spawnEnemy()
 		--local whatObstacle = math.random( 2 )
 		local xDelta = math.random(-300, 100)
 		--if (whatObstacle == 1) then
-		newEnemy = display.newSprite(heroGroup, eagleFlying, eagleSequences )
-		newEnemy.x = 2050 + xDelta
-		newEnemy.y = 50
+			newEnemy = display.newSprite(heroGroup, barbarianRunning, barbarianSequences )
+			newEnemy.x = 2050 + xDelta
+			newEnemy.y = floor1.y - 220
 
-		newEnemy:setSequence( "fly" )
-		newEnemy:play()
+			newEnemy:setSequence( "run" )
+			newEnemy:play()
 
-		physics.addBody( newEnemy, "kinematic", { shape=eagleShape } )
-		transition.to( newEnemy, { time=6000, alpha=1, hero.x, y=floor1.y, tag="transTag"} )
+			physics.addBody( newEnemy, "static", { shape=barbarianShape } )
+			transition.to( newEnemy, { time=6000, alpha=1, x=-700+xDelta, y=newEnemy.y, tag="transTag"} )
 
+			
+		--else
+		--	newObstacle = display.newImageRect(obstacleGroup, "images/log1-pix2.png", 220, 110)
+		--	newObstacle.x = 2050 +xDelta
+		--	newObstacle.y = 652
+
+		--	local logShape = {  10,53, -108,11, -76,-55, -56,-55, 46,-21, 103,11, 110,26 }
+		--	physics.addBody( newObstacle, "static", { shape=logShape } )
+		--	transition.to( newObstacle, { time=6000, alpha=1, x=-700+xDelta, y=newObstacle.y, tag="transTag"} )
+		--end
 		table.insert( obstacleTable, newEnemy)
 		newEnemy.myName = "enemy"
 		newEnemy.isFixedRotation = true
-		print("SPAWNED")
 	end
 end
 
@@ -166,8 +168,7 @@ end
 local function checkrun()
 	if(died == false) then
 		local x = hero:getLinearVelocity()
-		--if(math.floor(hero.y) > 527 and (x < 0 or x > 0)) then
-		if(x < 0 or x > 0) then
+		if(math.floor(hero.y) > 527 and (x < 0 or x > 0)) then
 			hero:setLinearVelocity(0, 0)
 		end
 	end
@@ -175,7 +176,7 @@ end
 
 ScoreTiemr = timer.performWithDelay(1000, timerScore, 0)
 timer.performWithDelay(500, stay, 0)
-timer.performWithDelay(100, checkrun, 0)
+timer.performWithDelay(1000, checkrun, 0)
 
 local function visible()
 	timer.performWithDelay(100, 
@@ -232,8 +233,8 @@ local function onKeyEvent( event )
 				hero:setSequence( "jumpStart" )
 				hero:play()
 
-				--local vx, vy = hero:getLinearVelocity()
-				--hero:setLinearVelocity( vx, 0 )
+				local vx, vy = hero:getLinearVelocity()
+				hero:setLinearVelocity( vx, 0 )
 				hero:applyLinearImpulse( nil, -550, hero.x, hero.y )
 			end
 		end
@@ -253,6 +254,8 @@ local function heroListener( event )
 	local thisSprite = event.target  -- "event.target" references the sprite
 
 	--print("Sprite y: "..math.round(thisSprite.y) .. " isJumping: "..tostring(hero.isJumping))
+
+	print(hero.y)
 
 	if (hero.isJumping == true) then
 		if (thisSprite.sequence == "jumpStart" and math.round(thisSprite.y) == 547) then
@@ -286,7 +289,7 @@ end
 local function onAttackCollision( self, event )
 	if (event.other.myName == "enemy" and hero.isAttacking == true) then
 		display.remove( event.other )
-		--event.other.isSensor = true
+		event.other.isBodyActive = false
 	end
 end
 
@@ -295,14 +298,24 @@ local function onLocalCollision( self, event )
 	if ( event.phase == "began" and hitobstacle == false) then
 		local obj1 = event.other
 
+		--if (obj1.myName == "attack") then
+		--	print("ELO")
+		--end
 
 		if ( obj1.myName == "obstacle" or obj1.myName == "enemy") then
 
+			if(obj1.myName == "enemy") then
+				if (hero.isAttacking) then
+					return false
+				else
+					display.remove( obj1 )
+					obj1.isBodyActive = false
+				end
+			end
 
 			print("SELF: " .. self.x .. " " .. self.y)
 			print("OBJ: " .. obj1.x .. " " .. obj1.y)
 			print(tostring(physics.getAverageCollisionPositions()))
-			print(obj1.myName)
 
 			if(lives ~= 0 ) then
 				lives = lives - 1
@@ -331,8 +344,6 @@ local function onLocalCollision( self, event )
 
 				hero:pause()
 				timer.cancel(ScoreTiemr)
-				timer.cancel(ObstacleSpawnTimer)
-				timer.cancel(accelerationTimer)
 				
 				-- To tutaj powoduje bug z podwójnym ekranem końcowym
 				-- transition.cancel( "transTag")
@@ -360,36 +371,14 @@ local function scrollBackground(background)
 end
 
 local function scrollFloor(floor)
+	print(hero.density)
 	--floor.x = 2050
-	--if (floor == floor1) then
-	--	floor.x = floor2.x + 1370
-	--else
-	--	floor.x = floor1.x + 1370
-	--end
-	if (floor1.x <= -700) then
-		floor1.x = floor2.x + 1370
+	if (floor == floor1) then
+		floor.x = floor2.x + 1370
+	else
+		floor.x = floor1.x + 1370
 	end
-	if (floor2.x <= -700) then
-		floor2.x = floor1.x + 1370
-	end
-	--transition.to( floor, { time=6000, alpha=1, x=-700, y=floor.y, onComplete=scrollFloor, tag="transTag"} )
-end
-
-local function accelerate()
-	initialSpeed = initialSpeed - 5
-	print(initialSpeed)
-	--local x, y = floor1:getLinearVelocity()
-	floor1:setLinearVelocity(initialSpeed, y)
-	--x, y = floor2:getLinearVelocity()
-	floor2:setLinearVelocity(initialSpeed, y)
-
-	for i = #obstacleTable, 1, -1 do
-		local thisObstacle = obstacleTable[i]
-		if (thisObstacle.x ~= nil) then
-			--x, y = thisObstacle:getLinearVelocity()
-			thisObstacle:setLinearVelocity(initialSpeed, y)
-		end
-	end
+	transition.to( floor, { time=6000, alpha=1, x=-700, y=floor.y, onComplete=scrollFloor, tag="transTag"} )
 end
 
 
@@ -436,19 +425,15 @@ function scene:create( event )
 	floor1.id = "ground"
 	
 	local floorShape = { -700,-125, 700,-125, 700,152, -700,152 }
-	--physics.addBody( floor1, "static", {shape=floorShape, bounce=0.0 } )
-	--transition.to( floor1, { time=3000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor, tag="transTag"} )
-	physics.addBody( floor1, "kinematic", { shape=floorShape } )
-	floor1:setLinearVelocity(initialSpeed, 0)
+	physics.addBody( floor1, "static", {shape=floorShape, bounce=0.0 } )
+	transition.to( floor1, { time=3000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor, tag="transTag"} )
 
 	floor2 = display.newImageRect(floorGroup, "images/platform.png", 1400 , 305)
 	floor2.x = 2070
 	floor2.y = 800
 	floor2.id = "ground"
-	--physics.addBody( floor2, "static", { shape=floorShape, bounce=0.0 } )
-	--transition.to( floor2, { time=6000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor, tag="transTag"} )
-	physics.addBody( floor2, "kinematic", { shape=floorShape } )
-	floor2:setLinearVelocity(initialSpeed, 0)
+	physics.addBody( floor2, "static", { shape=floorShape, bounce=0.0 } )
+	transition.to( floor2, { time=6000, alpha=1, x=-700, y=floor1.y,  onComplete=scrollFloor, tag="transTag"} )
 	
 	-- Create hero
 	hero = display.newSprite(heroGroup, heroRunning, heroSequences )
@@ -514,9 +499,7 @@ function scene:show( event )
 
 		GameLoopTimer = timer.performWithDelay( 1000, gameLoop, 0 )
 		ObstacleSpawnTimer = timer.performWithDelay(2000, createObstacle, 0)
-		ScrollTimer = timer.performWithDelay(200, scrollFloor, 0)
-		accelerationTimer = timer.performWithDelay(3000, accelerate, 0)
-		EnemySpawnTimer = timer.performWithDelay(6000, spawnEnemy, 0)
+		--EnemySpawnTimer = timer.performWithDelay(2500, spawnEnemy, 0)
 	end
 end
 
@@ -529,7 +512,6 @@ function scene:hide( event )
 
 	if ( phase == "will" ) then
 		transition.cancel( "transTag" )
-		
 
 		-- Code here runs when the scene is on screen (but is about to go off screen)
 
@@ -537,7 +519,6 @@ function scene:hide( event )
 		-- Code here runs immediately after the scene goes entirely off screen
 		Runtime:removeEventListener( "collision", onCollision )
 		hero:removeEventListener("collision", onCollision)
-		timer.cancel(ScrollTimer)
 
 		physics.pause()
 		composer.removeScene( "scenes.game" )
